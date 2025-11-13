@@ -29,6 +29,7 @@ async function run() {
     const bookCollection = db.collection('Books')
     const commentsCollection = db.collection('comments')
     const topCollection = db.collection('top-rated')
+    const genreCollection = db.collection('top-genre')
 
     // for getting all books
     // app.get('/books', async (req, res) => {
@@ -72,7 +73,7 @@ async function run() {
         // Add created_at field
         const bookData = {
           ...data,
-          createdAt: new Date().toISOString(), // timestamp
+          created_at: new Date().toISOString(), // timestamp
         };
 
         const result = await bookCollection.insertOne(bookData);
@@ -162,6 +163,28 @@ async function run() {
       }
     });
 
+    // DELETE /comments/:id
+    app.delete('/comments/:id', async (req, res) => {
+      const { id } = req.params;
+      const userId = req.body.userId; // pass userId in request body to verify ownership
+
+      try {
+        const comment = await commentsCollection.findOne({ _id: new ObjectId(id) });
+
+        if (!comment) return res.status(404).json({ message: "Comment not found" });
+
+        if (comment.userId !== userId) {
+          return res.status(403).json({ message: "You can only delete your own comments" });
+        }
+
+        await commentsCollection.deleteOne({ _id: new ObjectId(id) });
+        res.json({ message: "Comment deleted" });
+      } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: "Server error" });
+      }
+    });
+
     // Get top-rated books from top-rated collection
     app.get('/top-rated', async (req, res) => {
       try {
@@ -171,6 +194,17 @@ async function run() {
       } catch (err) {
         console.error(err);
         res.status(500).send({ success: false, message: 'Failed to fetch top-rated books' });
+      }
+    });
+
+    // Get top genres
+    app.get('/top-genres', async (req, res) => {
+      try {
+        const genres = await genreCollection.find({}).toArray();
+        res.send(genres);
+      } catch (err) {
+        console.error(err);
+        res.status(500).send({ success: false, message: "Failed to fetch top genres" });
       }
     });
 
