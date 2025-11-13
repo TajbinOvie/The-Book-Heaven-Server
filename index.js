@@ -64,17 +64,37 @@ async function run() {
 
     // post method
     app.post('/books', async (req, res) => {
-      const data = req.body
-      console.log(data)
-      const result = await bookCollection.insertOne(data)
-      res.send(result)
-    })
+      try {
+        const data = req.body;
+
+        // Add created_at field
+        const bookData = {
+          ...data,
+          created_at: new Date().toISOString(), // timestamp
+        };
+
+        const result = await bookCollection.insertOne(bookData);
+
+        res.send({
+          success: true,
+          message: "Book added successfully",
+          result,
+        });
+      } catch (error) {
+        console.error("Error adding book:", error);
+        res.status(500).send({
+          success: false,
+          message: "Failed to add book",
+        });
+      }
+    });
+
 
     // delete method
     app.delete('/books/:id', async (req, res) => {
-      const {id} = req.params
+      const { id } = req.params
 
-      const result = await bookCollection.deleteOne({_id: new ObjectId(id)})
+      const result = await bookCollection.deleteOne({ _id: new ObjectId(id) })
 
       res.send({
         success: true,
@@ -83,13 +103,13 @@ async function run() {
     })
 
     // put method for edit
-    app.put('/books/:id', async(req, res) => {
-      const {id} = req.params
+    app.put('/books/:id', async (req, res) => {
+      const { id } = req.params
       const data = req.body
       console.log(id)
       console.log(data)
       const objectId = new ObjectId(id)
-      const filter = {_id: objectId}
+      const filter = { _id: objectId }
       const update = {
         $set: data
       }
