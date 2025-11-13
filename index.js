@@ -31,12 +31,6 @@ async function run() {
     const topCollection = db.collection('top-rated')
     const genreCollection = db.collection('top-genre')
 
-    // for getting all books
-    // app.get('/books', async (req, res) => {
-    //   const result = await bookCollection.find().toArray()
-    //   res.send(result)
-    // })
-
     app.get('/latest-books', async (req, res) => {
       const cursor = bookCollection.find().sort({ created_at: -1 }).limit(6);
       const result = await cursor.toArray();
@@ -70,10 +64,9 @@ async function run() {
       try {
         const data = req.body;
 
-        // Add created_at field
         const bookData = {
           ...data,
-          created_at: new Date().toISOString(), // timestamp
+          created_at: new Date().toISOString(), 
         };
 
         const result = await bookCollection.insertOne(bookData);
@@ -127,7 +120,7 @@ async function run() {
       const { bookId } = req.params;
       try {
         const comments = await commentsCollection
-          .find({ bookId: bookId })       // match bookId as string
+          .find({ bookId: bookId })       
           .sort({ createdAt: -1 })
           .toArray();
         res.send(comments);
@@ -166,7 +159,7 @@ async function run() {
     // DELETE /comments/:id
     app.delete('/comments/:id', async (req, res) => {
       const { id } = req.params;
-      const userId = req.body.userId; // pass userId in request body to verify ownership
+      const userId = req.body.userId; 
 
       try {
         const comment = await commentsCollection.findOne({ _id: new ObjectId(id) });
