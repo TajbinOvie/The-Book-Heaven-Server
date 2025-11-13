@@ -28,6 +28,7 @@ async function run() {
     const db = client.db('Book-Heaven')
     const bookCollection = db.collection('Books')
     const commentsCollection = db.collection('comments')
+    const topCollection = db.collection('top-rated')
 
     // for getting all books
     // app.get('/books', async (req, res) => {
@@ -121,46 +122,58 @@ async function run() {
     })
 
     // GET comments for a specific book
-app.get("/comments/:bookId", async (req, res) => {
-  const { bookId } = req.params;
-  try {
-    const comments = await commentsCollection
-      .find({ bookId: bookId })       // match bookId as string
-      .sort({ createdAt: -1 })
-      .toArray();
-    res.send(comments);
-  } catch (err) {
-    console.error(err);
-    res.status(500).send({ error: "Failed to fetch comments" });
-  }
-});
+    app.get("/comments/:bookId", async (req, res) => {
+      const { bookId } = req.params;
+      try {
+        const comments = await commentsCollection
+          .find({ bookId: bookId })       // match bookId as string
+          .sort({ createdAt: -1 })
+          .toArray();
+        res.send(comments);
+      } catch (err) {
+        console.error(err);
+        res.status(500).send({ error: "Failed to fetch comments" });
+      }
+    });
 
-// POST a new comment
-app.post("/comments", async (req, res) => {
-  const { bookId, userId, userName, userPhoto, comment } = req.body;
+    // POST a new comment
+    app.post("/comments", async (req, res) => {
+      const { bookId, userId, userName, userPhoto, comment } = req.body;
 
-  if (!bookId || !userId || !userName || !comment) {
-    return res.status(400).send({ error: "Missing required fields" });
-  }
+      if (!bookId || !userId || !userName || !comment) {
+        return res.status(400).send({ error: "Missing required fields" });
+      }
 
-  const newComment = {
-    bookId,
-    userId,
-    userName,
-    userPhoto: userPhoto || "",
-    comment,
-    createdAt: new Date()
-  };
+      const newComment = {
+        bookId,
+        userId,
+        userName,
+        userPhoto: userPhoto || "",
+        comment,
+        createdAt: new Date()
+      };
 
-  try {
-    const result = await commentsCollection.insertOne(newComment);
-    res.send({ success: true, comment: newComment });
-  } catch (err) {
-    console.error(err);
-    res.status(500).send({ error: "Failed to post comment" });
-  }
-});
-    
+      try {
+        const result = await commentsCollection.insertOne(newComment);
+        res.send({ success: true, comment: newComment });
+      } catch (err) {
+        console.error(err);
+        res.status(500).send({ error: "Failed to post comment" });
+      }
+    });
+
+    // Get top-rated books from top-rated collection
+    app.get('/top-rated', async (req, res) => {
+      try {
+        const cursor = topCollection.find({});
+        const result = await cursor.toArray();
+        res.send(result);
+      } catch (err) {
+        console.error(err);
+        res.status(500).send({ success: false, message: 'Failed to fetch top-rated books' });
+      }
+    });
+
 
 
     await client.db("admin").command({ ping: 1 });
