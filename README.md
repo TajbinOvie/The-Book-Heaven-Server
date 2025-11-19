@@ -2,6 +2,8 @@
 
 This is the backend server for **The Book Heaven** web application. It provides APIs for managing books, users, and reviews, powering the frontend application.
 
+**Live Site:** https://the-book-heaven-server.vercel.app/
+
 ## 🛠️ Technologies Used
 - Node.js
 - Express.js
